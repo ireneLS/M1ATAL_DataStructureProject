@@ -1,10 +1,12 @@
 import java.util.Scanner;
+import java.util.ArrayList;
 
 public class Main {
 
 	public static void main(String[] args) {
 		double p;
 		Graphe g;
+		ArrayList<ArrayList<String>> resultats = new ArrayList<ArrayList<String>>();
 		System.out.println("Bonjour,");
 		Scanner sc = new Scanner(System.in);
 		int choix = Integer.MAX_VALUE;
@@ -28,5 +30,14 @@ public class Main {
 			
 		}
 		sc.close();
+	}
+	
+	static void afficheResultat(ArrayList<ArrayList<String>> tab){
+		for (ArrayList<String> ligne : tab) {
+			for (String colonne : ligne) {
+				System.out.println(colonne+"\t||");
+			}
+			System.out.println("_________________________________________________________________________________________________________________________________________________________________________________________________________________________________");
+		}
 	}
 }

@@ -8,6 +8,7 @@ public class Graphe {
 	private int degreMoyen; // degre moyen
 	// liste de sucesseur representant le graphe
 	private ArrayList<ArrayList<Integer>> listeSuccesseur;
+	private ArrayList<Arete> listeAretes = new ArrayList<Arete>();
 
 	public Graphe(int n, double p) {
 		// nombre aleatoire pour generer les aretes
@@ -27,6 +28,7 @@ public class Graphe {
 					// on ajoute l'arete dans la liste de succ
 					this.listeSuccesseur.get(i).add(j);
 					this.listeSuccesseur.get(j).add(i);
+					this.listeAretes.add(new Arete(i, j));
 					// on en compte une de plus
 					this.m = this.m + 1;
 				}
@@ -51,6 +53,10 @@ public class Graphe {
 	
 	public int getM() {
 		return m;
+	}
+	
+	public ArrayList<Arete> getListeAretes() {
+		return listeAretes;
 	}
 	
 	public int getDegreMax() {
