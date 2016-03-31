@@ -45,32 +45,74 @@ public class Graphe {
 		this.degreMoyen = sommeDegres / n;
 	}
 
+	/**
+	 * constructeur d'un graphe G' correspondant au graphe G privé de son sommet u
+	 * \/!\ cette méthode n'initialise pas delta et degreMax.
+	 * Elle est utilisé uniquement par VC.ARB_VC qui n'a pas besoin de ces attributs
+	 * 
+	 * @param g
+	 *            un graphe G
+	 * @param sommetASupprimer
+	 *            le sommet a supprimer de G
+	 */
+	public Graphe(Graphe g, int sommetASupprimer) {
+		this.n = g.getN() - 1;
+		// liste successeur ne change pas et ne représente pas listeAretes.
+		this.listeSuccesseur = new ArrayList<ArrayList<Integer>>(g.getListeSuccesseur());
+		
+		ArrayList<Arete> aretesASupprimer = new ArrayList<Arete>();
+
+		// on supprime toutes les aretes incidentes du sommetASupprimer
+		for (int sommetIncident : g.getSuccesseurs(sommetASupprimer)) {
+			aretesASupprimer.add(new Arete(sommetASupprimer, sommetIncident));
+		}
+		
+		this.listeAretes = new ArrayList<Arete>(g.getListeAretes());
+		this.listeAretes.removeAll(aretesASupprimer);
+
+		this.m = listeAretes.size();
+		this.degreMax = 0;
+		this.degreMoyen = 0;
+	}
+
+	public ArrayList<Integer> getSuccesseurs(int sommet) {
+		return listeSuccesseur.get(sommet);
+	}
+
 	public String toString() {
 		return "nombre de sommet : " + n + "\nnombre d'arrete : " + m
-				+ "\ndegre max : " + degreMax + ", degre moyen : " + degreMoyen;
-		// + "\narete : " + listeSuccesseur.toString();
+				+ "\ndegre max : " + degreMax + ", degre moyen : " + degreMoyen
+				+ "\narete : " + listeSuccesseur.toString();
 	}
-	
+
+	/**
+	 * 
+	 * @return le nombre d'aretes du graphe
+	 */
 	public int getM() {
 		return m;
 	}
-	
+
 	public ArrayList<Arete> getListeAretes() {
 		return listeAretes;
 	}
-	
+
 	public int getDegreMax() {
 		return degreMax;
 	}
-	
+
 	public int getDegreMoyen() {
 		return degreMoyen;
 	}
-	
+
 	public ArrayList<ArrayList<Integer>> getListeSuccesseur() {
 		return listeSuccesseur;
 	}
-	
+
+	/**
+	 * 
+	 * @return le nombre de sommet du graphe
+	 */
 	public int getN() {
 		return n;
 	}

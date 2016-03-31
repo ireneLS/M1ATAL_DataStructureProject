@@ -7,13 +7,19 @@ public class Arete {
 		this.sommetArrivee = sommet2;
 	}
 
-	public boolean equals(Arete aComparer) {
-		return (aComparer.getSommetArrivee() == this.sommetDepart || aComparer
+	/**
+	 * @param aComparer
+	 *            l'arete a comparer
+	 * @return pour une arete (u,v) et une arete AComparer (a,b) retourne vrai
+	 *         si (u == a ou u == b) && (v == a ou v == b)
+	 */
+	@Override
+	public boolean equals(Object aComparer) {
+		return (((Arete) aComparer).getSommetArrivee() == this.sommetDepart || ((Arete) aComparer)
 				.getSommetDepart() == this.sommetDepart)
-				&& (aComparer.getSommetArrivee() == this.sommetArrivee || aComparer
+				&& (((Arete) aComparer).getSommetArrivee() == this.sommetArrivee || ((Arete) aComparer)
 						.getSommetDepart() == this.sommetArrivee);
 	}
-	
 
 	public int getSommetArrivee() {
 		return sommetArrivee;
@@ -21,5 +27,9 @@ public class Arete {
 
 	public int getSommetDepart() {
 		return sommetDepart;
+	}
+
+	public String toString() {
+		return "(" + sommetDepart + ", " + sommetArrivee + ")";
 	}
 }
