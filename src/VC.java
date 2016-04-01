@@ -1,9 +1,12 @@
 import java.util.ArrayList;
 import java.util.Random;
 
+import org.chocosolver.solver.ResolutionPolicy;
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.constraints.Constraint;
 import org.chocosolver.solver.constraints.IntConstraintFactory;
+import org.chocosolver.solver.constraints.real.Ibex;
+import org.chocosolver.solver.constraints.real.RealConstraint;
 import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.RealVar;
 import org.chocosolver.solver.variables.VariableFactory;
@@ -52,21 +55,35 @@ public class VC {
 
 		return VPrime.size();
 	}
-	
-	public static int IPL_VC(Graphe g){
+
+	public static int IPL_VC(Graphe g) {
 		Solver solveur = new Solver("IPL_VC");
-		
-		RealVar[] variables = VariableFactory.realArray("x",g.getN(), 0.0, 1.0,0.001d, solveur);
-		
-		UndirectedGraph ug = new UndirectedGraph(g.getN(), SetType.LINKED_LIST, true);
+
+		IntVar[] variables = VariableFactory.integerArray("x", g.getN(), 0, 1,
+				solveur);
+
+		for (int i = 0; i < variables.length; i++) {
+			System.out
+					.println("variable " + i + " : " + variables[i].getName());
+		}
+		UndirectedGraph ug = new UndirectedGraph(g.getN(), SetType.LINKED_LIST,
+				true);
 
 		for (Arete arete : g.getListeAretes()) {
 			ug.addEdge(arete.sommetDepart, arete.sommetArrivee);
 		}
-		//IntConstraintFactory
-		//Constraint C1 = 
-		//RealVar objectif = VariableFactory.
-		
+		for (int i = 0; i < g.getN() - 1; i++) {
+			for (int j = i; i < g.getN(); i++) {
+				if (g.aLArete(i, j)) {
+					solveur.post(IntConstraintFactory.arithm(variables[i], "+",
+							variables[j], ">=", 1));
+				}
+			}
+		}
+
+//		IntVar obj = VariableFactory.i
+		solveur.findOptimalSolution(ResolutionPolicy.MINIMIZE, obj);
+
 		return 0;
 	}
 
@@ -80,7 +97,7 @@ public class VC {
 			Random rand = new Random();
 			// int u, v;
 			// Graphe G1, G2;
-			//System.out.println("nb aretes : " + aretes.size());
+			// System.out.println("nb aretes : " + aretes.size());
 			int randomNumber = rand.nextInt(aretes.size());
 			// l'argument de nextInt est exclusif on peut donc laisser
 			// aretes.size() sans -1

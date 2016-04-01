@@ -74,6 +74,10 @@ public class Graphe {
 		this.degreMax = 0;
 		this.degreMoyen = 0;
 	}
+	
+	public boolean aLArete(int i, int j){
+		return listeAretes.contains(new Arete(i,j));
+	}
 
 	public ArrayList<Integer> getSuccesseurs(int sommet) {
 		return listeSuccesseur.get(sommet);
