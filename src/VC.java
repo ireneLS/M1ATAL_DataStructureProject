@@ -3,15 +3,11 @@ import java.util.Random;
 
 import org.chocosolver.solver.ResolutionPolicy;
 import org.chocosolver.solver.Solver;
-import org.chocosolver.solver.constraints.Constraint;
 import org.chocosolver.solver.constraints.IntConstraintFactory;
-import org.chocosolver.solver.constraints.real.Ibex;
-import org.chocosolver.solver.constraints.real.RealConstraint;
+import org.chocosolver.solver.exception.ContradictionException;
+import org.chocosolver.solver.search.strategy.IntStrategyFactory;
 import org.chocosolver.solver.variables.IntVar;
-import org.chocosolver.solver.variables.RealVar;
 import org.chocosolver.solver.variables.VariableFactory;
-import org.chocosolver.util.objects.graphs.UndirectedGraph;
-import org.chocosolver.util.objects.setDataStructures.SetType;
 
 public class VC {
 	static int GreedyVC(Graphe g) {
@@ -59,32 +55,47 @@ public class VC {
 	public static int IPL_VC(Graphe g) {
 		Solver solveur = new Solver("IPL_VC");
 
+		/* les variables sont toutes de valeur 0 ou 1, pas besoin d'ajouter de contrainte*/
 		IntVar[] variables = VariableFactory.integerArray("x", g.getN(), 0, 1,
 				solveur);
-
-		for (int i = 0; i < variables.length; i++) {
-			System.out
-					.println("variable " + i + " : " + variables[i].getName());
-		}
-		UndirectedGraph ug = new UndirectedGraph(g.getN(), SetType.LINKED_LIST,
-				true);
-
-		for (Arete arete : g.getListeAretes()) {
-			ug.addEdge(arete.sommetDepart, arete.sommetArrivee);
-		}
+		
+		/* contrainte : chaque arete a au moins une de ces arete comprise dans le VC 
+		 */
+		System.out.println("nb sommet : "+g.getN());
 		for (int i = 0; i < g.getN() - 1; i++) {
-			for (int j = i; i < g.getN(); i++) {
+			for (int j = i; j < g.getN(); j++) {
 				if (g.aLArete(i, j)) {
 					solveur.post(IntConstraintFactory.arithm(variables[i], "+",
 							variables[j], ">=", 1));
 				}
 			}
 		}
+		
 
-//		IntVar obj = VariableFactory.i
+		IntVar obj = VariableFactory.integer("obj", 0, g.getN(), solveur);
+		solveur.post(IntConstraintFactory.sum(variables, obj));
+		solveur.set(IntStrategyFactory.lexico_Split(variables));
 		solveur.findOptimalSolution(ResolutionPolicy.MINIMIZE, obj);
 
-		return 0;
+
+	try {
+		solveur.restoreLastSolution();
+		for (int i = 0; i < variables.length; i++) {
+			System.out.println("x"+i+" = "+variables[i].getValue());
+		}
+	} catch (ContradictionException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+		
+		System.out.println("nb contrainte = nb arete ? "+solveur.getNbCstrs());
+		
+		for (int i = 0; i < solveur.getNbCstrs() ; i++) {
+			System.out
+					.println("contrainte " + i + " = " + solveur.getCstrs()[i]);
+		}
+		
+		return obj.getValue();
 	}
 
 	public static boolean ARB_VC(Graphe g, int k) {

@@ -8,6 +8,7 @@ public class test {
 		System.out.println(g.getListeAretes().toString());
 //		
 
+		System.out.println(VC.IPL_VC(g));
 
 	}
 }

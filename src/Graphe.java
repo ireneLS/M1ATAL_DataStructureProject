@@ -38,7 +38,7 @@ public class Graphe {
 		// une fois le graphe construit on peut compter son degre.
 		int sommeDegres = 0;
 		for (ArrayList<Integer> listeSommet : listeSuccesseur) {
-			this.degreMax = Integer.max(this.degreMax, listeSommet.size());
+			this.degreMax = Math.max(this.degreMax, listeSommet.size());
 			sommeDegres += listeSommet.size();
 		}
 
@@ -47,8 +47,8 @@ public class Graphe {
 
 	/**
 	 * constructeur d'un graphe G' correspondant au graphe G privé de son sommet u
-	 * \/!\ cette méthode n'initialise pas delta et degreMax.
-	 * Elle est utilisé uniquement par VC.ARB_VC qui n'a pas besoin de ces attributs
+	 * \/!\ cette methode n'initialise pas delta et degreMax.
+	 * Elle est utilise uniquement par VC.ARB_VC qui n'a pas besoin de ces attributs
 	 * 
 	 * @param g
 	 *            un graphe G
@@ -76,7 +76,7 @@ public class Graphe {
 	}
 	
 	public boolean aLArete(int i, int j){
-		return listeAretes.contains(new Arete(i,j));
+		return listeSuccesseur.get(i).contains(j) || listeSuccesseur.get(j).contains(i);
 	}
 
 	public ArrayList<Integer> getSuccesseurs(int sommet) {
