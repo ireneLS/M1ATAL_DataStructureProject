@@ -5,6 +5,7 @@ public class Graphe {
 	private int n;// nb de sommet
 	private int m = 0; // nb d'arete
 	private int degreMax = 0;// degre max
+	private int degreMin = Integer.MAX_VALUE;// degre min utile pour Kernel_VC
 	private int degreMoyen; // degre moyen
 	// liste de sucesseur representant le graphe
 	private ArrayList<ArrayList<Integer>> listeSuccesseur;
@@ -35,20 +36,24 @@ public class Graphe {
 			}
 		}
 
-		// une fois le graphe construit on peut compter son degre.
+		// une fois le graphe construit on peut compter ses degres.
 		int sommeDegres = 0;
 		for (ArrayList<Integer> listeSommet : listeSuccesseur) {
-			this.degreMax = Math.max(this.degreMax, listeSommet.size());
-			sommeDegres += listeSommet.size();
+			// un sommet isole n'est pas interessant
+			if (listeSommet.size() != 0) {
+				this.degreMax = Math.max(this.degreMax, listeSommet.size());
+				this.degreMin = Math.min(this.degreMin, listeSommet.size());
+				sommeDegres += listeSommet.size();
+			}
 		}
 
 		this.degreMoyen = sommeDegres / n;
 	}
 
 	/**
-	 * constructeur d'un graphe G' correspondant au graphe G privé de son sommet u
-	 * \/!\ cette methode n'initialise pas delta et degreMax.
-	 * Elle est utilise uniquement par VC.ARB_VC qui n'a pas besoin de ces attributs
+	 * constructeur d'un graphe G' correspondant au graphe G prive de son sommet
+	 * u \/!\ cette methode n'initialise pas delta. Elle est utilise par
+	 * VC.ARB_VC et KERNEL8VC qui n'ont pas besoin de cet attribut
 	 * 
 	 * @param g
 	 *            un graphe G
@@ -56,27 +61,60 @@ public class Graphe {
 	 *            le sommet a supprimer de G
 	 */
 	public Graphe(Graphe g, int sommetASupprimer) {
-		this.n = g.getN() - 1;
-		// liste successeur ne change pas et ne représente pas listeAretes.
-		this.listeSuccesseur = new ArrayList<ArrayList<Integer>>(g.getListeSuccesseur());
+		// on a toujours autant de sommet, les sommets sont juste isoles des
+		// autres.
+		this.n = g.getN();
+
+		// ----- MAJ LISTE SUCCESSEUR -----
+		// liste successeur representera listeAretes tout en gardant les sommets
+		// a supprimer pour ne pas decaler l'ordre.
+		this.listeSuccesseur = new ArrayList<ArrayList<Integer>>();
+		for ( ArrayList<Integer> successeurs : g.getListeSuccesseur()) {
+			this.listeSuccesseur.add(new ArrayList<Integer>(successeurs));
+		}
 		
+		// on supprime les aretes incidentes au sommet a supprimer
+		// dans un sens
+		this.listeSuccesseur.get(sommetASupprimer).clear();
+		// et dans l'autre
+		for (ArrayList<Integer> successeurs : this.listeSuccesseur) {
+			// on teste si on est sur un sommet isole, dans ce cas pas besoin de
+			// supprimer
+			if (successeurs.size() != 0) {
+				successeurs.remove((Object) sommetASupprimer);
+				// on en profite pour mettre a jour les degre min et max
+				this.degreMax = Math.max(this.degreMax, successeurs.size());
+
+				// /!\ le degre min ne doit pas etre confondu avec un sommet
+				// devenu isole on rajoute donc une condition pour exclure ces
+				// sommets
+				if (successeurs.size() != 0) {
+					this.degreMin = Math.min(this.degreMin, successeurs.size());
+				}
+			}
+		}
+
+		// ----- MAJ LISTE ARRETES -----
+		this.listeAretes = new ArrayList<Arete>(g.getListeAretes());
+
+		// la liste des aretes qu'on supprimera de la listeAretes...
 		ArrayList<Arete> aretesASupprimer = new ArrayList<Arete>();
 
-		// on supprime toutes les aretes incidentes du sommetASupprimer
+		// ...toutes les aretes incidentes du sommetASupprimer
 		for (int sommetIncident : g.getSuccesseurs(sommetASupprimer)) {
 			aretesASupprimer.add(new Arete(sommetASupprimer, sommetIncident));
 		}
-		
-		this.listeAretes = new ArrayList<Arete>(g.getListeAretes());
+		/*
+		 * /!\ ArrayList.removeAll(...) se base sur la methode equals du type de
+		 * la collection (ici Arete). pour la methode Arete.equals(Object),
+		 * (u,v) == (v,u) on a donc pas a rajouter les aretes "inverses" dans
+		 * EPrime.
+		 */
 		this.listeAretes.removeAll(aretesASupprimer);
 
 		this.m = listeAretes.size();
-		this.degreMax = 0;
+
 		this.degreMoyen = 0;
-	}
-	
-	public boolean aLArete(int i, int j){
-		return listeSuccesseur.get(i).contains(j) || listeSuccesseur.get(j).contains(i);
 	}
 
 	public ArrayList<Integer> getSuccesseurs(int sommet) {
@@ -84,9 +122,8 @@ public class Graphe {
 	}
 
 	public String toString() {
-		return "nombre de sommet : " + n + "\nnombre d'arrete : " + m
-				+ "\ndegre max : " + degreMax + ", degre moyen : " + degreMoyen
-				+ "\narete : " + listeSuccesseur.toString();
+		return "nombre de sommet : " + n + "\nnombre d'arrete : " + m + "\ndegre max : " + degreMax + ", degre moyen : "
+				+ degreMoyen + ", degre min : " + degreMin + "\narete : " + listeSuccesseur.toString();
 	}
 
 	/**
@@ -100,9 +137,17 @@ public class Graphe {
 	public ArrayList<Arete> getListeAretes() {
 		return listeAretes;
 	}
+	
+	public int getDegre(int i){
+		return this.listeSuccesseur.get(i).size();
+	}
 
 	public int getDegreMax() {
 		return degreMax;
+	}
+
+	public int getDegreMin() {
+		return degreMin;
 	}
 
 	public int getDegreMoyen() {

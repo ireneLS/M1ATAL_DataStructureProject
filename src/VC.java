@@ -13,17 +13,20 @@ public class VC {
 	static int GreedyVC(Graphe g) {
 		Random rand = new Random();
 		ArrayList<Arete> aretes = new ArrayList<Arete>(g.getListeAretes());
-		ArrayList<Integer> VPrime = new ArrayList<Integer>(); // sommets
-																// selectionnes
-		ArrayList<Arete> EPrime = new ArrayList<Arete>(); // arete a supprimer
+		// sommets selectionnes
+		ArrayList<Integer> VPrime = new ArrayList<Integer>();
+		// aretes a supprimer
+		ArrayList<Arete> EPrime = new ArrayList<Arete>();
 		Arete areteATraiter;
 		int u, v;
-		while (aretes.size() > 0) {// tant qu'on a des aretes
+		// tant qu'on a des aretes
+		while (aretes.size() > 0) {
 			EPrime.clear();
 			// l'argument de nextInt est exclusif on peut donc laisser
-			// aretes.size() sans -1
+			// aretes.size() sans -1 (cf doc Random)
 			int randomNumber = rand.nextInt(aretes.size());
-			// on choisi une arete a traiter
+			// on choisi une arete a traiter aleatoirement dans les aretes du
+			// graphes
 			areteATraiter = aretes.get(randomNumber);
 			u = areteATraiter.getSommetDepart();
 			v = areteATraiter.getSommetArrivee();
@@ -42,59 +45,70 @@ public class VC {
 				// liste des aretes a supprimer
 				EPrime.add(new Arete(v, sommetIncident));
 			}
-			// on supprime toutes les arretes de incidentes à u et v des aretes
-			// du graphe.
-			// /!\ pour la methode Arete.equals(Object) (u,v) == (v,u) on a donc
-			// pas a rajouter les aretes "inverse"
+			/*
+			 * on supprime toutes les arretes de incidentes a u et v du graphe g
+			 * /!\ pour la methode Arete.equals(Object) (u,v) == (v,u) on a donc
+			 * pas a rajouter les aretes "inverses" dans EPrime. Puisque
+			 * ArrayList.removeAll(...) se base sur la methode equals du type de
+			 * la collection (ici Arete)
+			 */
 			aretes.removeAll(EPrime);
 		}
 
 		return VPrime.size();
 	}
 
+	/**
+	 * Resolution du probleme de Vertex Cover grace a un solveur. On travaille
+	 * ici avec des variables entieres. Chaque variable representant un sommet.
+	 * Si la varible xi == 1 alors le sommet i est dans le VC, sinon xi == 0 et
+	 * i n'est PAS dans le VC
+	 * 
+	 * @param g
+	 * @return
+	 */
 	public static int IPL_VC(Graphe g) {
 		Solver solveur = new Solver("IPL_VC");
 
-		/* les variables sont toutes de valeur 0 ou 1, pas besoin d'ajouter de contrainte*/
-		IntVar[] variables = VariableFactory.integerArray("x", g.getN(), 0, 1,
-				solveur);
-		
-		/* contrainte : chaque arete a au moins une de ces arete comprise dans le VC 
+		/*
+		 * les variables sont toutes de valeur 0 ou 1, pas besoin d'ajouter de
+		 * contrainte
 		 */
-		System.out.println("nb sommet : "+g.getN());
-		for (int i = 0; i < g.getN() - 1; i++) {
-			for (int j = i; j < g.getN(); j++) {
-				if (g.aLArete(i, j)) {
-					solveur.post(IntConstraintFactory.arithm(variables[i], "+",
-							variables[j], ">=", 1));
-				}
-			}
-		}
-		
+		IntVar[] variables = VariableFactory.integerArray("x", g.getN(), 0, 1, solveur);
 
-		IntVar obj = VariableFactory.integer("obj", 0, g.getN(), solveur);
+		// contrainte : chaque arete a au moins un de ses sommets compris dans
+		// le VC donc pour toutes les aretes de g on ajoute une contrainte
+		for (Arete arete : g.getListeAretes()) {
+			solveur.post(IntConstraintFactory.arithm(variables[arete.getSommetDepart()], "+",
+					variables[arete.getSommetArrivee()], ">=", 1));
+		}
+
+		/*
+		 * creation de la fonction objectif a minimiser. Dans le solveur elle
+		 * est representee sous la forme d'une variable entiere dont la valeur
+		 * est comprise entre 0 et le nombre de sommet
+		 */
+		IntVar obj = VariableFactory.integer("MIN_VC", 0, g.getN(), solveur);
 		solveur.post(IntConstraintFactory.sum(variables, obj));
 		solveur.set(IntStrategyFactory.lexico_Split(variables));
 		solveur.findOptimalSolution(ResolutionPolicy.MINIMIZE, obj);
 
+		try {
+			solveur.restoreLastSolution();
+			for (int i = 0; i < variables.length; i++) {
+				System.out.println("x" + i + " = " + variables[i].getValue());
+			}
+		} catch (ContradictionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
-	try {
-		solveur.restoreLastSolution();
-		for (int i = 0; i < variables.length; i++) {
-			System.out.println("x"+i+" = "+variables[i].getValue());
-		}
-	} catch (ContradictionException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-		
-		System.out.println("nb contrainte = nb arete ? "+solveur.getNbCstrs());
-		
-		for (int i = 0; i < solveur.getNbCstrs() ; i++) {
-			System.out
-					.println("contrainte " + i + " = " + solveur.getCstrs()[i]);
-		}
-		
+		// // affichage des contraintes
+		// for (int i = 0; i < solveur.getNbCstrs(); i++) {
+		// System.out.println("contrainte " + i + " = " +
+		// solveur.getCstrs()[i]);
+		// }
+
 		return obj.getValue();
 	}
 
@@ -120,13 +134,38 @@ public class VC {
 			// G2 = new Graphe(g, v);
 			// System.out.println("u = "+u+", v = "+v);
 			// System.out.println("aretes G : "+g.getListeAretes().toString());
-			// System.out.println("aretes G1 : "+G1.getListeAretes().toString());
-			// System.out.println("aretes G2 : "+G2.getListeAretes().toString());
+			// System.out.println("aretes G1 :
+			// "+G1.getListeAretes().toString());
+			// System.out.println("aretes G2 :
+			// "+G2.getListeAretes().toString());
 
-			return ARB_VC(new Graphe(g, areteATraiter.getSommetDepart()),
-					(k - 1))
-					|| ARB_VC(new Graphe(g, areteATraiter.getSommetArrivee()),
-							(k - 1));
+			return ARB_VC(new Graphe(g, areteATraiter.getSommetDepart()), (k - 1))
+					|| ARB_VC(new Graphe(g, areteATraiter.getSommetArrivee()), (k - 1));
 		}
+	}
+
+	public static boolean KERNEL_VC(Graphe g, int k) {
+		// --- "reduction" de g en g' ---
+		if (g.getDegreMin() == 1) {
+			// on cherche le premier sommet de degre 1
+			for (int u = 0; u < g.getN(); u++) {
+				if (g.getDegre(u) == 1) {
+					return KERNEL_VC(new Graphe(g, g.getSuccesseurs(u).get(0)), k - 1);
+				}
+			}
+		} else if (g.getDegreMax() >= k + 1) {
+			// on cherche le premier sommet de degre >= k+1
+			for (int u = 0; u < g.getN(); u++) {
+				if (g.getDegre(u) >= k+1) {
+					return KERNEL_VC(new Graphe(g, u), k - 1);
+				}
+			}
+		}
+// TODO : on a la reduction de I en I'
+		if (Math.pow(k, 2) <= g.getM()) {
+			return false;
+		}
+
+		return false;
 	}
 }
