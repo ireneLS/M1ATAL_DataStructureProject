@@ -15,10 +15,15 @@ public class Arete {
 	 */
 	@Override
 	public boolean equals(Object aComparer) {
-		return (((Arete) aComparer).getSommetArrivee() == this.sommetDepart || ((Arete) aComparer)
-				.getSommetDepart() == this.sommetDepart)
-				&& (((Arete) aComparer).getSommetArrivee() == this.sommetArrivee || ((Arete) aComparer)
-						.getSommetDepart() == this.sommetArrivee);
+		if (aComparer.getClass().equals(Arete.class)) {
+			return (((Arete) aComparer).getSommetArrivee() == this.sommetDepart || ((Arete) aComparer)
+					.getSommetDepart() == this.sommetDepart)
+					&& (((Arete) aComparer).getSommetArrivee() == this.sommetArrivee || ((Arete) aComparer)
+							.getSommetDepart() == this.sommetArrivee);
+		} else {// si on veut supprimer toutes les aretes contenant un sommet particulier
+			return ((Integer) aComparer).equals(this.sommetArrivee)
+					|| ((Integer) aComparer).equals(this.sommetDepart);
+		}
 	}
 
 	public int getSommetArrivee() {

@@ -95,9 +95,9 @@ public class VC {
 
 		try {
 			solveur.restoreLastSolution();
-			for (int i = 0; i < variables.length; i++) {
-				System.out.println("x" + i + " = " + variables[i].getValue());
-			}
+//			for (int i = 0; i < variables.length; i++) {
+//				System.out.println("x" + i + " = " + variables[i].getValue());
+//			}
 		} catch (ContradictionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -146,25 +146,38 @@ public class VC {
 
 	public static boolean KERNEL_VC(Graphe g, int k) {
 		// --- "reduction" de g en g' ---
+//		System.out.println(g.toString());
+//		System.out.println(g.getListeAretes().toString());
+		// G est de degre max k, sinon on peut retourner faux directement
+		if (g.getDegreMax() > k) {
+			return false;
+		}
 		if (g.getDegreMin() == 1) {
+//			System.out.println("degreMIN !");
 			// on cherche le premier sommet de degre 1
 			for (int u = 0; u < g.getN(); u++) {
 				if (g.getDegre(u) == 1) {
+//					System.out.println("on supprime le sommet : "+g.getSuccesseurs(u).get(0));
 					return KERNEL_VC(new Graphe(g, g.getSuccesseurs(u).get(0)), k - 1);
 				}
 			}
 		} else if (g.getDegreMax() >= k + 1) {
+//			System.out.println("degreMAX !");
 			// on cherche le premier sommet de degre >= k+1
 			for (int u = 0; u < g.getN(); u++) {
 				if (g.getDegre(u) >= k+1) {
+//					System.out.println("on supprime le sommet : "+u);
 					return KERNEL_VC(new Graphe(g, u), k - 1);
 				}
 			}
 		}
-// TODO : on a la reduction de I en I'
-		if (Math.pow(k, 2) <= g.getM()) {
-			return false;
-		}
+		
+		
+		// TODO : on a la reduction de I en I'
+		// --- graphe réduit ---
+		// generation de toutes les combinaison possible.
+		
+		ArrayList<Integer> combi = new ArrayList<Integer>();
 
 		return false;
 	}

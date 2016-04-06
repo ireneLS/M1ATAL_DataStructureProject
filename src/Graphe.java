@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -116,6 +117,16 @@ public class Graphe {
 
 		this.degreMoyen = 0;
 	}
+	
+	public boolean aUnVC(ArrayList<Integer> VCaTester){
+		ArrayList<Arete> listeAretesTmp = new ArrayList<Arete>(this.listeAretes);
+		for (Object sommet : VCaTester) {
+			// on supprime toutes les aretes contenant le sommet
+			while(listeAretesTmp.remove(sommet));
+		}
+		// si on a supprimer toutes les aretes c'est que c'est un VC
+		return listeAretesTmp.isEmpty();
+	}
 
 	public ArrayList<Integer> getSuccesseurs(int sommet) {
 		return listeSuccesseur.get(sommet);
@@ -124,6 +135,11 @@ public class Graphe {
 	public String toString() {
 		return "nombre de sommet : " + n + "\nnombre d'arrete : " + m + "\ndegre max : " + degreMax + ", degre moyen : "
 				+ degreMoyen + ", degre min : " + degreMin + "\narete : " + listeSuccesseur.toString();
+	}
+	
+	public String toStringSimple() {
+		return "nombre de sommet : " + n + "\nnombre d'arrete : " + m + "\ndegre max : " + degreMax + ", degre moyen : "
+				+ degreMoyen + ", degre min : " + degreMin;
 	}
 
 	/**

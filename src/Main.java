@@ -3,6 +3,8 @@ import java.util.ArrayList;
 
 public class Main {
 
+	private static int nbExecARB = 0;
+
 	public static void main(String[] args) {
 		double p;
 		Graphe g;
@@ -32,8 +34,11 @@ public class Main {
 					+ g.getM() + "\t\t|" + g.getDegreMax() + "\t\t|"
 					+ g.getDegreMoyen() + "\t\t||");
 			int valGreedy = VC.GreedyVC(g);
-			System.out
-			.println("\tTemps\t|\tVal\t|\tNb Exec\t||\tTemps\t|\t"+calculeARB_VC(g, valGreedy)+"\t|\tNb Exec\t||\tTemps\t|\t"+valGreedy+"\t||\tTemps\t|\tVal\t||");
+			int valIPL = VC.IPL_VC(g);
+			System.out.println("\tTemps\t|\tVal\t|\tNb Exec\t||\tTemps\t|\t"
+					+ calculeARB_VC(g, Math.min(valGreedy, valIPL))
+					+ "\t|\t"+nbExecARB+"\t||\tTemps\t|\t" + valGreedy
+					+ "\t||\tTemps\t|\t"+valIPL+"\t||");
 			System.out
 					.println("_________________________________________________________________________________________________________________________________________________________________________________________________________________________________");
 
@@ -65,25 +70,26 @@ public class Main {
 	 *            obtenus.
 	 * @return
 	 */
-	static int calculeARB_VC(Graphe g, int k){
-		int valKMin = (k/2);
+	static int calculeARB_VC(Graphe g, int k) {
+		int valKMin = (k / 2);
 		int valKMax = k;
 		int valKMilieu = (int) Math.ceil(((valKMax + valKMin) / 2));
-		System.out.println("val k min = "+ valKMin);
-		System.out.println("val k max = "+ valKMax);
-		System.out.println(" val k milieu = " + valKMilieu);
-		
-		while (valKMin <= valKMax){
+		// System.out.println("val k min = "+ valKMin);
+		// System.out.println("val k max = "+ valKMax);
+		// System.out.println(" val k milieu = " + valKMilieu);
+
+		while (valKMin <= valKMax) {
+			nbExecARB += 1;
 			if (VC.ARB_VC(g, valKMilieu)) {
-				valKMax = valKMilieu -1;
-			}
-			else{
-				valKMin = valKMilieu +1;
+				valKMax = valKMilieu - 1;
+			} else {
+				valKMin = valKMilieu + 1;
 			}
 			valKMilieu = (int) Math.ceil(((valKMax + valKMin) / 2));
 		}
-		
-		System.out.println("val k min = "+ valKMin + " "+ VC.ARB_VC(g, valKMin));
+
+		// System.out.println("val k min = "+ valKMin + " "+ VC.ARB_VC(g,
+		// valKMin));
 		return valKMin;
 	}
 }
