@@ -1,4 +1,3 @@
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -10,6 +9,8 @@ public class Graphe {
 	private int degreMoyen; // degre moyen
 	// liste de sucesseur representant le graphe
 	private ArrayList<ArrayList<Integer>> listeSuccesseur;
+	// liste des aretes du graphe, evite des parcours de listeSuccesseur trop
+	// nombreux.
 	private ArrayList<Arete> listeAretes = new ArrayList<Arete>();
 
 	public Graphe(int n, double p) {
@@ -53,8 +54,8 @@ public class Graphe {
 
 	/**
 	 * constructeur d'un graphe G' correspondant au graphe G prive de son sommet
-	 * u \/!\ cette methode n'initialise pas delta. Elle est utilise par
-	 * VC.ARB_VC et KERNEL8VC qui n'ont pas besoin de cet attribut
+	 * sommetASupprimer /!\ cette methode n'initialise pas delta. Elle est
+	 * utilise par VC.ARB_VC et KERNEL_VC qui n'ont pas besoin de cet attribut
 	 * 
 	 * @param g
 	 *            un graphe G
@@ -70,14 +71,14 @@ public class Graphe {
 		// liste successeur representera listeAretes tout en gardant les sommets
 		// a supprimer pour ne pas decaler l'ordre.
 		this.listeSuccesseur = new ArrayList<ArrayList<Integer>>();
-		for ( ArrayList<Integer> successeurs : g.getListeSuccesseur()) {
+		for (ArrayList<Integer> successeurs : g.getListeSuccesseur()) {
 			this.listeSuccesseur.add(new ArrayList<Integer>(successeurs));
 		}
-		
+
 		// on supprime les aretes incidentes au sommet a supprimer
-		// dans un sens
+		// dans un sens....
 		this.listeSuccesseur.get(sommetASupprimer).clear();
-		// et dans l'autre
+		// ...et dans l'autre
 		for (ArrayList<Integer> successeurs : this.listeSuccesseur) {
 			// on teste si on est sur un sommet isole, dans ce cas pas besoin de
 			// supprimer
@@ -105,11 +106,11 @@ public class Graphe {
 		for (int sommetIncident : g.getSuccesseurs(sommetASupprimer)) {
 			aretesASupprimer.add(new Arete(sommetASupprimer, sommetIncident));
 		}
+
 		/*
 		 * /!\ ArrayList.removeAll(...) se base sur la methode equals du type de
-		 * la collection (ici Arete). pour la methode Arete.equals(Object),
-		 * (u,v) == (v,u) on a donc pas a rajouter les aretes "inverses" dans
-		 * EPrime.
+		 * l'argument (ici Arete). pour la methode Arete.equals(Object), (u,v)
+		 * == (v,u) on a donc pas a rajouter les aretes "inverses" dans EPrime.
 		 */
 		this.listeAretes.removeAll(aretesASupprimer);
 
@@ -117,26 +118,60 @@ public class Graphe {
 
 		this.degreMoyen = 0;
 	}
-	
-	public boolean aUnVC(ArrayList<Integer> VCaTester){
+
+	/**
+	 * verifie si liste est un Vertex Cover du Graphe
+	 * 
+	 * @param liste
+	 *            une liste de sommet
+	 * @return true si la liste en argument est un vc du Graphe
+	 */
+	public boolean aUnVC(ArrayList<Integer> liste) {
+		// on copie la liste des aretes du graphe pour ne pas les perdre
 		ArrayList<Arete> listeAretesTmp = new ArrayList<Arete>(this.listeAretes);
-		for (Object sommet : VCaTester) {
+		// pour chaque sommet du VC a tester on enleve les aretes couvertes par
+		// ce sommet
+		for (Object sommet : liste) {
 			// on supprime toutes les aretes contenant le sommet
-			while(listeAretesTmp.remove(sommet));
+			for (int i = 0; i < listeAretesTmp.size(); i++) {
+				// la methode Arete.equals(int) est definie expres pour ca
+				if (listeAretesTmp.get(i).equals(sommet)) {
+					listeAretesTmp.remove(i);
+					// quand on supprime un element la liste se decal "vers la
+					// gauche" on decremente i pour ne pas louper une arete
+					i = i - 1;
+				}
+			}
 		}
 		// si on a supprimer toutes les aretes c'est que c'est un VC
 		return listeAretesTmp.isEmpty();
 	}
 
+	/**
+	 * permet de recuperer les successeurs du sommet sommet uniquement
+	 * 
+	 * @param sommet
+	 *            le sommet dont on veut recuperer les successeurs
+	 * @return une liste des successeurs de sommet
+	 */
 	public ArrayList<Integer> getSuccesseurs(int sommet) {
 		return listeSuccesseur.get(sommet);
 	}
 
+	/**
+	 * @return une String representant un graphe
+	 */
 	public String toString() {
 		return "nombre de sommet : " + n + "\nnombre d'arrete : " + m + "\ndegre max : " + degreMax + ", degre moyen : "
 				+ degreMoyen + ", degre min : " + degreMin + "\narete : " + listeSuccesseur.toString();
 	}
-	
+
+	/**
+	 * affichage sans les aretes du graphe pour ne pas surcharger l'affichage en
+	 * cas de tres grands graphes
+	 * 
+	 * @return une String representant un graphe
+	 */
 	public String toStringSimple() {
 		return "nombre de sommet : " + n + "\nnombre d'arrete : " + m + "\ndegre max : " + degreMax + ", degre moyen : "
 				+ degreMoyen + ", degre min : " + degreMin;
@@ -153,8 +188,8 @@ public class Graphe {
 	public ArrayList<Arete> getListeAretes() {
 		return listeAretes;
 	}
-	
-	public int getDegre(int i){
+
+	public int getDegre(int i) {
 		return this.listeSuccesseur.get(i).size();
 	}
 

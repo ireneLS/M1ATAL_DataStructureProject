@@ -1,4 +1,8 @@
 public class Arete {
+	/**
+	 * il n'y a en fait pas d'ordre aux aretes puisqu'on travaille sur des
+	 * graphes non orientes
+	 */
 	int sommetDepart;
 	int sommetArrivee;
 
@@ -16,13 +20,13 @@ public class Arete {
 	@Override
 	public boolean equals(Object aComparer) {
 		if (aComparer.getClass().equals(Arete.class)) {
-			return (((Arete) aComparer).getSommetArrivee() == this.sommetDepart || ((Arete) aComparer)
-					.getSommetDepart() == this.sommetDepart)
-					&& (((Arete) aComparer).getSommetArrivee() == this.sommetArrivee || ((Arete) aComparer)
-							.getSommetDepart() == this.sommetArrivee);
-		} else {// si on veut supprimer toutes les aretes contenant un sommet particulier
-			return ((Integer) aComparer).equals(this.sommetArrivee)
-					|| ((Integer) aComparer).equals(this.sommetDepart);
+			return (((Arete) aComparer).getSommetArrivee() == this.sommetDepart
+					|| ((Arete) aComparer).getSommetDepart() == this.sommetDepart)
+					&& (((Arete) aComparer).getSommetArrivee() == this.sommetArrivee
+							|| ((Arete) aComparer).getSommetDepart() == this.sommetArrivee);
+		} else {// si on veut supprimer toutes les aretes contenant un sommet
+				// particulier
+			return ((Integer) aComparer).equals(this.sommetArrivee) || ((Integer) aComparer).equals(this.sommetDepart);
 		}
 	}
 

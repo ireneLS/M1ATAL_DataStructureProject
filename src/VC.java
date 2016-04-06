@@ -95,9 +95,9 @@ public class VC {
 
 		try {
 			solveur.restoreLastSolution();
-//			for (int i = 0; i < variables.length; i++) {
-//				System.out.println("x" + i + " = " + variables[i].getValue());
-//			}
+			// for (int i = 0; i < variables.length; i++) {
+			// System.out.println("x" + i + " = " + variables[i].getValue());
+			// }
 		} catch (ContradictionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -146,39 +146,91 @@ public class VC {
 
 	public static boolean KERNEL_VC(Graphe g, int k) {
 		// --- "reduction" de g en g' ---
-//		System.out.println(g.toString());
-//		System.out.println(g.getListeAretes().toString());
+		// System.out.println(g.toString());
+		// System.out.println(g.getListeAretes().toString());
 		// G est de degre max k, sinon on peut retourner faux directement
 		if (g.getDegreMax() > k) {
 			return false;
 		}
 		if (g.getDegreMin() == 1) {
-//			System.out.println("degreMIN !");
+			// System.out.println("degreMIN !");
 			// on cherche le premier sommet de degre 1
 			for (int u = 0; u < g.getN(); u++) {
 				if (g.getDegre(u) == 1) {
-//					System.out.println("on supprime le sommet : "+g.getSuccesseurs(u).get(0));
+					// System.out.println("on supprime le sommet :
+					// "+g.getSuccesseurs(u).get(0));
 					return KERNEL_VC(new Graphe(g, g.getSuccesseurs(u).get(0)), k - 1);
 				}
 			}
 		} else if (g.getDegreMax() >= k + 1) {
-//			System.out.println("degreMAX !");
+			// System.out.println("degreMAX !");
 			// on cherche le premier sommet de degre >= k+1
 			for (int u = 0; u < g.getN(); u++) {
-				if (g.getDegre(u) >= k+1) {
-//					System.out.println("on supprime le sommet : "+u);
+				if (g.getDegre(u) >= k + 1) {
+					// System.out.println("on supprime le sommet : "+u);
 					return KERNEL_VC(new Graphe(g, u), k - 1);
 				}
 			}
 		}
-		
-		
-		// TODO : on a la reduction de I en I'
-		// --- graphe r√©duit ---
-		// generation de toutes les combinaison possible.
-		
-		ArrayList<Integer> combi = new ArrayList<Integer>();
 
+		// TODO : on a la reduction de I en I'
+		// --- graphe reduit ---
+		// generation de toutes les combinaison possible.
+
+		ArrayList<ArrayList<Integer>> listeCombinaisons = new ArrayList<ArrayList<Integer>>();
+		ArrayList<Integer> sommetDuGrapheReduit = new ArrayList<Integer>();
+		for (int i = 0; i < g.getN(); i++) {
+			if (!g.getSuccesseurs(i).isEmpty()) {
+				sommetDuGrapheReduit.add(i);
+			}
+		}
+//		System.out.println("graphe reduit : " + g.toString());
+//		System.out.println(g.getListeAretes().toString());
+//		System.out.println("liste sommet des permut : " + sommetDuGrapheReduit);
+		partition(sommetDuGrapheReduit, k, 0, new int[k], listeCombinaisons);
+//		System.out.println("liste des permut : "+listeCombinaisons);
+		/*
+		 * pour toutes les combinaisons possibles de sommets pour un VC de
+		 * taille k on teste si c'est un VC de g. et des qu'on en trouve un on retourne oui
+		 */
+		for (ArrayList<Integer> combinaison : listeCombinaisons) {
+			//System.out.println("combi ! "+combinaison.toString());
+			if (g.aUnVC(combinaison)) {
+				return true;
+			}
+		}
+		// si aucune combinaison n'est un VC alors on retourne faux
 		return false;
 	}
+
+	// construction recursive des listes possibles
+	private static void partition(ArrayList<Integer> n, int k, int index, int[] liste,
+			ArrayList<ArrayList<Integer>> allCombi) {
+		if (index >= k) {
+			// la liste est construite -> FIN
+			// on la rajoute a la liste des combis
+			// System.out.println(Arrays.toString(liste));
+			ArrayList<Integer> tmp = new ArrayList<Integer>();
+			for (int i = 0; i < k; i++) {
+				tmp.add(liste[i]);
+			}
+			allCombi.add(tmp);
+			return;
+		}
+
+		// ajoute un nouvel element candidat dans la liste
+		// - avec ordre -> candidat: seulement les elements supÈrieurs au
+		// prÈcÈdant
+
+		int start = 0;
+		if (index > 0)
+			start = n.indexOf(liste[index - 1]) + 1;
+
+		for (int i = start; i < n.size(); i++) {
+			liste[index] = n.get(i);
+			partition(n, k, index + 1, liste, allCombi);
+		}
+	}
+	
+	
 }
