@@ -1,25 +1,23 @@
 
-public class ThreadARB extends Thread {
+public class ThreadGREEDY extends Thread {
 	private Graphe graphe;
-	private int k =-1;
-	private int kMin = 0;
+	private int val = 0;
 	private double tpsExec = 0.0;
 
-	public ThreadARB(Graphe g, int k) {
-		super("ARB");
+	public ThreadGREEDY(Graphe g) {
+		super("GREEDY");
 		this.graphe = g;
-		this.k = k;
 	}
 
 	public void run() {
 		long tempsDebut = System.nanoTime();
-		this.kMin = Main.calculeARB_VC(graphe, k);
+		this.val = VC.GreedyVC(graphe);
 		tpsExec = ((System.nanoTime()-tempsDebut) / 1000000000.00f);
 		
 	}
 
-	public int getkMin() {
-		return kMin;
+	public int getVal() {
+		return val;
 	}
 	
 	public double getTpsExec() {
